@@ -33,15 +33,46 @@ function makeResponsive() {
     var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    d3.csv("data.csv").then(function(stateData){
+    d3.csv("assets/data.csv").then(function(stateData){
         console.log(stateData);
-        var xLinearScale = d3.scaleLinear()
-      .domain([20, d3.max(stateData, d => d.obesity)])
+      //   var xLinearScale = d3.scaleLinear()
+      // .domain([0, d3.max(stateData, d => parseFloat(d.obesity))])
+      // .range([0, width]);
+
+      var xLinearScale = d3.scaleLinear()
+      .domain([d3.min(stateData, function(d) {
+        console.log(parseFloat(d.obesity));
+      return parseFloat(d.obesity);
+      }), d3.max(stateData, function(d) {
+        console.log(parseFloat(d.obesity));
+      return parseFloat(d.obesity);
+      })])
       .range([0, width]);
 
-        var yLinearScale = d3.scaleLinear()
-        .domain([0, d3.max(stateData, d => d.poverty)])
-        .range([height, 0]);
+      console.log(width);
+      
+
+      // console.log(+stateData[0].obesity);
+      // console.log(d3.min(stateData.obesity));
+
+        // var yLinearScale = d3.scaleLinear()
+        // .domain([0, d3.min(stateData, d => parseFloat(d.poverty))])
+        // .range([height, 0]);
+
+      var yLinearScale = d3.scaleLinear()
+        .domain([d3.min(stateData, function(d) {
+          console.log(parseFloat(d.poverty));
+        return parseFloat(d.poverty);
+        }), d3.max(stateData, function(d) {
+        console.log(parseFloat(d.poverty));
+      return parseFloat(d.poverty);
+      })])
+      .range([height, 0]);
+
+
+      console.log(d3.max(stateData, d => d.poverty));
+      console.log(d3.min(stateData, d => d.poverty));
+
 
         var bottomAxis = d3.axisBottom(xLinearScale);
         var leftAxis = d3.axisLeft(yLinearScale);
@@ -55,26 +86,43 @@ function makeResponsive() {
 
       var circlesGroup = chartGroup.selectAll("circle")
     .data(stateData)
-    .enter()
-    .append("circle")
-    .attr("cx", d => xLinearScale(d.poverty))
-    .attr("cy", d => yLinearScale(d.obesity))
-    .attr("r", "15")
+    .enter();
+
+    console.log(circlesGroup);
+    circlesGroup.append("circle")
+    .attr("cx", d => xLinearScale(d.obesity))
+    .attr("cy", d => yLinearScale(d.poverty))
+    .attr("r", "25")
     .attr("fill", "pink")
-    .attr("opacity", ".5");
+    .attr("opacity", ".5")
+    .append("text")
+    .text(d => d.abbr)
+    .attr("cx", d => xLinearScale(d.obesity))
+    .attr("cy", d => yLinearScale(d.poverty))
+    .attr("class", "stateText")
+    .attr("font-size", "16");
+
+    console.log(xLinearScale(stateData[0].obesity));
 
     chartGroup.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left + 40)
+      .attr("y", 0 - margin.left)
       .attr("x", 0 - (height / 2))
       .attr("dy", "1em")
       .attr("class", "axisText")
-      .text("Number of Billboard 100 Hits");
+      .text("Obesity");
 
     chartGroup.append("text")
-      .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
+      .attr("y", 0 - (width / 2))
+      .attr("x", 0 - (margin.bottom-30))
+      .attr("dy", "1em")
       .attr("class", "axisText")
-      .text("Hair Metal Band Hair Length (inches)");
+      .text("Poverty");
+
+    // chartGroup.append("text")
+    //   .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
+    //   .attr("class", "axisText")
+    //   .text("Poverty");
   });
 };
 
